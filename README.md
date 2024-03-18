@@ -11,11 +11,11 @@
 
 ```xml
 
-<dependencySupport>
-    <groupId>com.insentek</groupId>
-    <artifactId>istk-wand-flex</artifactId>
+<dependency>
+    <groupId>io.github</groupId>
+    <artifactId>wand-flex</artifactId>
     <version>${version}</version>
-</dependencySupport>
+</dependency>
 ```
 ## 能力支持
 
