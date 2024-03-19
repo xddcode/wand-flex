@@ -1,11 +1,9 @@
-# istk-wand-flex
+# wand-flex
 
 - 动态加载、卸载bean；动态加载、卸载Controller自动完成路由映射。
 - 提供自定义注解扫描要暴露的公共方法。
 
 ## 使用教程
-
-[需配置云效的制品仓库](https://packages.aliyun.com/repos/2147848-release-ewxQvK/guide)
 
 1. 引入sdk
 
