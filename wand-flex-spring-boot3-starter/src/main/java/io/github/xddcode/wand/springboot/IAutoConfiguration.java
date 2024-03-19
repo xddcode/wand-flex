@@ -28,6 +28,7 @@ public class IAutoConfiguration {
         return new SpringContextUtils();
     }
 
+    @Bean
     public IScannerRunner iScannerRunner() {
         return new IScannerRunner();
     }

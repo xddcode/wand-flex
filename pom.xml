@@ -37,7 +37,7 @@
     </issueManagement>
 
     <properties>
-        <revision>1.1.7</revision>
+        <revision>1.1.9</revision>
 
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
