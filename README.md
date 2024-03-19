@@ -12,7 +12,7 @@
 ```xml
 
 <dependency>
-    <groupId>io.github</groupId>
+    <groupId>io.github.xddcode</groupId>
     <artifactId>wand-flex</artifactId>
     <version>${version}</version>
 </dependency>
@@ -25,7 +25,7 @@
 ```java
 @SpringBootApplication
 @EnableExposeMethod(basePackage = "com.insentek")
-public class WebServer1Application {
+public class DemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(WebServer1Application.class, args);

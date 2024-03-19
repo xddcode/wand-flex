@@ -1,4 +1,4 @@
-package io.github.xddcode.wand.datasource;
+package io.github.xddcode.wand.config;
 
 import lombok.Data;
 

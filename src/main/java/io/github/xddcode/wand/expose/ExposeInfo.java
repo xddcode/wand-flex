@@ -13,6 +13,7 @@ import java.util.List;
  */
 @Data
 public class ExposeInfo {
+    private String packageName;
     private String name;
     private String description;
     private ExposeType type;

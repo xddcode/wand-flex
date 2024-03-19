@@ -5,11 +5,11 @@
 
     <groupId>io.github.xddcode</groupId>
     <artifactId>wand-flex</artifactId>
-    <version>1.0.8</version>
+    <version>1.1.4</version>
 
     <name>wand-flex</name>
-    <description>istk-wand-flex - 动态编译加载工具</description>
-    <url>https://github.com/xddcode/1qfuewopmr</url>
+    <description>动态编译加载工具</description>
+    <url>https://github.com/xddcode/wand-flex</url>
 
     <licenses>
         <license>
@@ -20,14 +20,14 @@
 
     <developers>
         <developer>
-            <name>dh-free</name>
+            <name>xddcode</name>
             <email>459102951@qq.com</email>
         </developer>
     </developers>
 
     <scm>
-        <connection>https://github.com/xddcode/1qfuewopmr.git</connection>
-        <url>https://github.com/xddcode/1qfuewopmr</url>
+        <connection>https://github.com/xddcode/wand-flex.git</connection>
+        <url>https://github.com/xddcode/wand-flex</url>
     </scm>
 
     <issueManagement>
@@ -43,7 +43,7 @@
         <spring-boot.version>3.2.0</spring-boot.version>
         <lombok.version>1.18.30</lombok.version>
         <logback-classic.version>1.4.14</logback-classic.version>
-        <reflections.version>0.9.12</reflections.version>
+        <reflections.version>0.10.2</reflections.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <maven-model-builder.version>3.8.6</maven-model-builder.version>
         <aliyun-sdk-oss.version>3.17.2</aliyun-sdk-oss.version>
@@ -64,10 +64,10 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>ch.qos.logback</groupId>-->
-        <!--            <artifactId>logback-classic</artifactId>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>
             <artifactId>aliyun-sdk-oss</artifactId>
@@ -91,6 +91,11 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>4.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -133,11 +138,6 @@
                 <version>${commons-lang3.version}</version>
             </dependency>
             <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback-classic.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-model-builder</artifactId>
                 <version>${maven-model-builder.version}</version>
@@ -150,32 +150,21 @@
         </dependencies>
     </dependencyManagement>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <compilerArgument>-parameters</compilerArgument>
-                    <encoding>UTF-8</encoding>
                     <source>17</source>
                     <target>17</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        --add-opens=java.base/java.util=ALL-UNNAMED
+                    </compilerArgs>
                 </configuration>
             </plugin>
-            <!-- Source -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -189,11 +178,17 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Javadoc -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                    <additionalJOptions>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
+                        <additionalparam>-Xdoclint:none</additionalparam>
+                    </additionalJOptions>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -203,11 +198,10 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- GPG -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
+                <version>1.6</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -218,16 +212,14 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--自动发布-->
             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.13</version>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.4.0</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <publishingServerId>ossrh</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
                 </configuration>
             </plugin>
         </plugins>

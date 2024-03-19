@@ -1,16 +1,13 @@
 package io.github.xddcode.wand.datasource;
 
 import io.github.xddcode.wand.exception.DataSourceException;
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 import javax.sql.DataSource;
-import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 数据源管理
@@ -20,39 +17,18 @@ import java.util.Map;
  */
 public class DatasourceManager {
 
-    private static final String yamlFilePath = "application.yml";
+    private final DataSource dataSource;
 
-    public static DataSource getDataSource() {
-        DataSourceConfig config = loadDataSourceConfig(yamlFilePath);
-        String url = config.getUrl();
-        String username = config.getUsername();
-        String password = config.getPassword();
-        String driverClassName = config.getDriverClassName();
-        return DataSourceBuilder.create()
-                .url(url)
-                .username(username)
-                .password(password)
-                .driverClassName(driverClassName)
-                .build();
+    public DatasourceManager(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    /**
-     * 获取所有表名
-     *
-     * @return
-     */
-    public static List<String> getTables() {
-        DataSource dataSource = getDataSource();
-        return getTables(dataSource);
-    }
-
-    public static List<TableInfo> getTableInfos() {
-        DataSource dataSource = getDataSource();
-        List<String> tables = getTables(dataSource);
+    public List<TableInfo> getTableInfos() {
+        List<String> tables = getTables();
         List<TableInfo> tableInfos = new ArrayList<>();
         for (String table : tables) {
             TableInfo tableInfo = new TableInfo();
-            String ddl = getTableDDL(dataSource, table);
+            String ddl = getTableDDL(table);
             tableInfo.setTableName(table);
             tableInfo.setTableDDL(ddl);
             tableInfos.add(tableInfo);
@@ -63,28 +39,25 @@ public class DatasourceManager {
     /**
      * 获取所有表名
      *
-     * @param dataSource
      * @return
      */
-    public static List<String> getTables(DataSource dataSource) {
+    public List<String> getTables() {
         List<String> tables = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             ResultSet resultSet = connection.getMetaData().getTables(null, null, "%", new String[]{"TABLE"})) {
+             ResultSet resultSet = connection.getMetaData().getTables(getDatabaseNameFromUrl(connection.getMetaData().getURL()), null, "%", new String[]{"TABLE"})) {
             while (resultSet.next()) {
                 tables.add(resultSet.getString("TABLE_NAME"));
             }
         } catch (SQLException e) {
             throw new DataSourceException("Failed to retrieve table names", e);
+        } catch (URISyntaxException e) {
+            throw new DataSourceException("Failed to retrieve database name from URL", e);
         }
         return tables;
     }
 
-    public static String getTableDDL(String tableName) {
-        DataSource dataSource = getDataSource();
-        return getTableDDL(dataSource, tableName);
-    }
 
-    public static String getTableDDL(DataSource dataSource, String tableName) {
+    public String getTableDDL(String tableName) {
         String query = "SHOW CREATE TABLE " + tableName;
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
@@ -98,24 +71,12 @@ public class DatasourceManager {
         return "";
     }
 
-    @SuppressWarnings("unchecked")
-    public static DataSourceConfig loadDataSourceConfig(String yamlFilePath) {
-        Yaml yaml = new Yaml(new Constructor(Map.class));
-        InputStream inputStream = DatasourceManager.class
-                .getClassLoader()
-                .getResourceAsStream(yamlFilePath);
-
-        if (inputStream == null) {
-            throw new DataSourceException("Cannot find " + yamlFilePath);
+    private String getDatabaseNameFromUrl(String url) throws URISyntaxException {
+        URI uri = new URI(url.substring(5)); // 移除"jdbc:"部分
+        String path = uri.getPath();
+        if (path.startsWith("/")) {
+            path = path.substring(1); // 移除路径前面的"/"
         }
-        Map<String, Object> obj = yaml.load(inputStream);
-        Map<String, Object> dataSourceProps = (Map<String, Object>) ((Map<String, Object>) obj.get("spring")).get("datasource");
-
-        DataSourceConfig config = new DataSourceConfig();
-        config.setUrl((String) dataSourceProps.get("url"));
-        config.setUsername((String) dataSourceProps.get("username"));
-        config.setPassword((String) dataSourceProps.get("password"));
-        config.setDriverClassName((String) dataSourceProps.get("driver-class-name"));
-        return config;
+        return path.contains("/") ? path.substring(0, path.indexOf('/')) : path; // 截取第一个"/"前的部分作为数据库名
     }
 }

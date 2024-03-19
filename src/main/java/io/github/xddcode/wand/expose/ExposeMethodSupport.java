@@ -1,19 +1,24 @@
 package io.github.xddcode.wand.expose;
 
-import io.github.xddcode.wand.exception.ExposeRuntimeException;
 import io.github.xddcode.wand.expose.annotation.Expose;
 import io.github.xddcode.wand.expose.annotation.ExposeMethod;
 import io.github.xddcode.wand.expose.annotation.ExposeParameter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.reflections.scanners.Scanners.SubTypes;
+import static org.reflections.scanners.Scanners.TypesAnnotated;
 
 /**
  * @Author: hao.ding@insentek.com
@@ -25,29 +30,22 @@ public class ExposeMethodSupport {
     @Getter
     private static final List<ExposeInfo> exposeInfos = new ArrayList<>();
 
-    public static void init(String basePackage) {
-        log.info("Scanning base package: {}", basePackage);
+    public static void init(String scanPackage) {
+        log.info("Scanning base package: {}", scanPackage);
         exposeInfos.clear();
-        ClassPathScanningCandidateComponentProvider provider =
-                new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new AbstractTypeHierarchyTraversingFilter(true, true) { /* 留空 */
-        });
-
-        provider.findCandidateComponents(basePackage).forEach(beanDefinition -> {
-            try {
-                Class<?> cls = Class.forName(beanDefinition.getBeanClassName());
-                processClass(cls);
-            } catch (ClassNotFoundException e) {
-                log.error("Failed to load class: {}", beanDefinition.getBeanClassName(), e);
-                throw new ExposeRuntimeException("Failed to load class '" + beanDefinition.getBeanClassName() + "'. " + e.getMessage(), e);
-            }
-        });
+        Reflections reflections = new Reflections(scanPackage);
+        Set<Class<?>> classes =
+                reflections.get(SubTypes.of(TypesAnnotated.with(Expose.class)).asClass());
+        for (Class<?> cls : classes) {
+            processClass(cls);
+        }
     }
 
     private static void processClass(Class<?> cls) {
         Expose exposeAnnotation = cls.getAnnotation(Expose.class);
         if (exposeAnnotation == null) return;
         ExposeInfo exposeInfo = new ExposeInfo();
+        exposeInfo.setPackageName(cls.getPackageName());
         exposeInfo.setName(cls.getSimpleName());
         exposeInfo.setDescription(exposeAnnotation.description());
         exposeInfo.setType(exposeAnnotation.type());

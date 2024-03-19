@@ -4,12 +4,17 @@ import io.github.xddcode.wand.core.DynamicClass;
 import io.github.xddcode.wand.core.DynamicController;
 import io.github.xddcode.wand.core.SourceType;
 import io.github.xddcode.wand.expose.ExposeContext;
+import io.github.xddcode.wand.expose.ExposeResource;
 import io.github.xddcode.wand.utils.WandResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/wand")
 public class DefaultRest {
+
+    @Autowired
+    private ExposeContext exposeContext;
 
     @PostMapping("inject")
     public WandResponse inject(@RequestParam("javaFilePath") String javaFilePath, @RequestParam("fullClassName") String fullClassName) {
@@ -34,7 +39,7 @@ public class DefaultRest {
 
     @GetMapping("context-exposed")
     public WandResponse getExposeMethods() {
-        ExposeContext data = ExposeContext.init();
+        ExposeResource data = exposeContext.init();
         return WandResponse.success(data);
     }
 }
