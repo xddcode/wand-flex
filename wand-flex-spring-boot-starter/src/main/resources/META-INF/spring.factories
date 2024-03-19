@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.github.xddcode.wand.springboot.IAutoConfiguration,\
+  io.github.xddcode.wand.core.rest.DefaultRest

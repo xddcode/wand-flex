@@ -8,10 +8,17 @@
 1. 引入sdk
 
 ```xml
-
+# springboot2
 <dependency>
     <groupId>io.github.xddcode</groupId>
-    <artifactId>wand-flex</artifactId>
+    <artifactId>wand-flex-spring-boot-starter</artifactId>
+    <version>${version}</version>
+</dependency>
+
+# springboot3
+<dependency>
+    <groupId>io.github.xddcode</groupId>
+    <artifactId>wand-flex-spring-boot3-starter</artifactId>
     <version>${version}</version>
 </dependency>
 ```
@@ -186,3 +193,10 @@ public class DefaultRest {
 - **SourceType**目前支持加载本地文件（Local）和阿里云OSS文件（AliOSS）
 - **javaFilePath**为要动态加载的Controller的源码路径
 - **fullClassName**为Controller的全类名
+
+## 常见问题
+#### 1. jdk8的项目中引入动态编译会报错：com.sun.tools.javac.processing.JavacProcessingEnvironment
+- 解决方案：
+![img.png](img.png)
+  打开Project Strcutre，添加tools.jar
+
