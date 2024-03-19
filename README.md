@@ -24,7 +24,7 @@
 启动类标记注解@EnableExposeMethod以启用获取资源，可指定扫描包名，如果不制定则默认扫描启动类所在包及其子包。
 ```java
 @SpringBootApplication
-@EnableExposeMethod(basePackage = "com.insentek")
+@EnableExposeMethod(scannerPackage = "com.insentek")
 public class DemoApplication {
 
     public static void main(String[] args) {
@@ -33,13 +33,27 @@ public class DemoApplication {
 
 }
 ```
-目标工程需暴漏的方法上添加ExposeMethod注解，指定要暴露的方法名描述。
+目标工程需暴漏的资源类添加@Expose注解，以及对指定要暴露的方法添加@ExposeMethod注解。
 ```java
+@Expose(description = "STP工具服务", type = ExposeType.Static)
+public class StpUtils {
+
+    @ExposeMethod(returnType = DataType.LONG, description = "根据token获取用户id，返回Long类型")
+    public static Long getUserAsLong() {
+        return 1L;
+    }
+}
+
+
+
 @Service
+@Expose(description = "用户信息查询服务", type = ExposeType.SpringBean)
 public class UserService {
 
-    @ExposeMethod(desc = "获取用户信息")
-    public Object info(){
+    @ExposeMethod(parameters = {
+            @ExposeParameter(name = "uid", dataType = DataType.INTEGER, description = "用户ID")
+    }, returnType = DataType.OBJECT, description = "获取指定ID的用户信息")
+    public Object getUserById(int uid) {
         return "user info";
     }
 }
@@ -47,10 +61,18 @@ public class UserService {
 
 ```java
 //获取资源
-@Test
-void test() {
-    ExposeContext  exposeContext= ExposeContext.init();
-    System.out.println(exposeContext);
+@SpringBootTest
+class DemoApplicationTests {
+
+    @Autowired
+    private ExposeContext exposeContext;
+
+    @Test
+    void test() {
+        ExposeResource exposeResource = exposeContext.init();
+        System.out.println(JSON.toJSONString(exposeResource));
+    }
+
 }
 ```
 返回示例：
@@ -78,9 +100,40 @@ void test() {
   ],
   "exposedMethods": [
     {
-      "UserService.info()": "获取用户信息",
-      ...
-    }
+      "packageName": "com.insentek.service",
+      "name": "StpUtils",
+      "description": "STP工具服务",
+      "type": "Static",
+      "methods": [
+        {
+          "name": "getUserAsLong",
+          "returnType": null,
+          "description": "根据token获取用户id，返回Long类型",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "packageName": "com.insentek.service",
+      "name": "UserService",
+      "description": "用户信息查询服务",
+      "type": "SpringBean",
+      "methods": [
+        {
+          "name": "getUserById",
+          "returnType": null,
+          "description": "获取指定ID的用户信息",
+          "parameters": [
+            {
+              "name": "uid",
+              "dataType": "int",
+              "description": "用户ID"
+            }
+          ]
+        }
+      ]
+    },
+    ...
   ],
   "tableInfos": [
     {
