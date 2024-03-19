@@ -197,6 +197,6 @@ public class DefaultRest {
 ## 常见问题
 #### 1. jdk8的项目中引入动态编译会报错：com.sun.tools.javac.processing.JavacProcessingEnvironment
 - 解决方案：
-![img.png](img.png)
+![img.png](image/q1.png)
   打开Project Strcutre，添加tools.jar
 
